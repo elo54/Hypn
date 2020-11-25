@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Gravity;
@@ -138,6 +139,14 @@ public class MainActivity extends AppCompatActivity {
 
         //create timer for the view
         //view destroys when the timer is done for
+        final Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //Do something after delay = 10s
+                mWindowManager.removeView(mView);
+            }
+        }, 10000);
     }
 
     @Override
