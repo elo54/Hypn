@@ -29,6 +29,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Timer;
@@ -37,10 +38,13 @@ import java.util.TimerTask;
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_OVERLAY_PERMISSION = 1;
-    private ImageView settings, timelapse;
+    private ImageView settings;
 
     private Button lockPhone;
-    private boolean isLocked = false;
+
+    private TextView timeLeft;
+    private Button incrementTimer, decrementTimer;
+    private long millisInFuture = 1000;
 
     private DevicePolicyManager mDevicePolicyManager;
     private ComponentName mComponentName;
@@ -56,7 +60,10 @@ public class MainActivity extends AppCompatActivity {
         mComponentName = new ComponentName(this, MyAdminReceiver.class);
 
         settings = findViewById(R.id.settings);
-        timelapse = findViewById(R.id.timelapse);
+        lockPhone = findViewById(R.id.lockPhone);
+        timeLeft = findViewById(R.id.timeLeft);
+        incrementTimer = findViewById(R.id.incrementTimer);
+        decrementTimer = findViewById(R.id.decrementTimer);
 
         settings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,8 +71,6 @@ public class MainActivity extends AppCompatActivity {
                 openLoginActivity();
             }
         });
-
-        lockPhone = findViewById(R.id.lockPhone);
 
         lockPhone.setOnClickListener(new View.OnClickListener() {
             @Override

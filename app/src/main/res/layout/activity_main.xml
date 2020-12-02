@@ -65,6 +65,27 @@
             android:src="@drawable/ic_baseline_timelapse_24"
             android:contentDescription="@string/timelapse" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/incrementTimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="Increment"/>
+
+            <Button
+                android:id="@+id/decrementTimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="Decrement"/>
+
+        </LinearLayout>
+
         <Button
             android:id="@+id/lockPhone"
             android:layout_width="match_parent"
