@@ -73,24 +73,13 @@ public class MainActivity extends AppCompatActivity {
                 //check if we can lock phone
                 boolean isAdmin = mDevicePolicyManager.isAdminActive(mComponentName);
                 if (isAdmin) {
-                    //check status
-                    if (isLocked) {
-                        isLocked = false;
-                        lockPhone.setText("Lock Phone");
-                        timelapse.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_timelapse_24));
-                        Toast.makeText(getApplicationContext(), "Phone unlocked", Toast.LENGTH_SHORT).show();
-                    } else {
-                        isLocked = true;
-                        lockPhone.setText("Unlock Phone");
-                        timelapse.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_lock_24));
-                        Toast.makeText(getApplicationContext(), "Phone locked", Toast.LENGTH_SHORT).show();
-                        //do stuff to block phone
-                        //mDevicePolicyManager.lockNow();
+                    Toast.makeText(getApplicationContext(), "Phone locked", Toast.LENGTH_SHORT).show();
+                    //do stuff to block phone
+                    //mDevicePolicyManager.lockNow();
 
-                        //create a pop-up that always stay on top
-                        checkOverlayPermissions();
+                    //create a pop-up that always stay on top
+                    checkOverlayPermissions();
 
-                    }
                 } else {
                     Toast.makeText(getApplicationContext(), "Go to settings to enable admin", Toast.LENGTH_SHORT).show();
                 }
@@ -137,16 +126,24 @@ public class MainActivity extends AppCompatActivity {
         ViewGroup mView = (ViewGroup) getLayoutInflater().inflate(R.layout.overlay, null);
         mWindowManager.addView(mView, mLayoutParams);
 
+        Button unlockPhone = mView.findViewById(R.id.unlockPhone);
+        unlockPhone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mWindowManager.removeView(mView);
+            }
+        });
+
         //create timer for the view
         //view destroys when the timer is done for
-        final Handler handler = new Handler(Looper.getMainLooper());
+        /*final Handler handler = new Handler(Looper.getMainLooper());
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 //Do something after delay = 10s
                 mWindowManager.removeView(mView);
             }
-        }, 10000);
+        }, 10000);*/
     }
 
     @Override
