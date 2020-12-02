@@ -38,15 +38,13 @@
             android:textColor="@android:color/white"
             android:textSize="30sp" />
 
-        <TextView
-            android:id="@+id/timeLeft"
-            android:layout_width="match_parent"
+        <Chronometer
+            android:id="@+id/myChrono"
             android:layout_height="wrap_content"
+            android:layout_width="match_parent"
             android:gravity="center"
-            android:text="30 minutes"
-            android:textColor="@color/purple_500"
-            android:textSize="40sp"
-            android:textStyle="bold"/>
+            android:textSize="35sp"
+            android:textColor="@color/purple_500"/>
 
         <TextView
             android:id="@+id/textView2"
@@ -68,21 +66,22 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/incrementTimer"
+                android:id="@+id/incrementChrono"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:text="Increment"/>
+                android:text="Incrémenter"/>
 
             <Button
-                android:id="@+id/decrementTimer"
+                android:id="@+id/decrementChrono"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:text="Decrement"/>
+                android:text="Décrementer"/>
 
         </LinearLayout>
 

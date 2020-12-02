@@ -18,8 +18,10 @@ import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Gravity;
@@ -28,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,9 +45,9 @@ public class MainActivity extends AppCompatActivity {
 
     private Button lockPhone;
 
-    private TextView timeLeft;
-    private Button incrementTimer, decrementTimer;
-    private long millisInFuture = 1000;
+    private Button incrementChrono, decrementChrono;
+    private Chronometer myChrono;
+
 
     private DevicePolicyManager mDevicePolicyManager;
     private ComponentName mComponentName;
@@ -61,9 +64,18 @@ public class MainActivity extends AppCompatActivity {
 
         settings = findViewById(R.id.settings);
         lockPhone = findViewById(R.id.lockPhone);
-        timeLeft = findViewById(R.id.timeLeft);
-        incrementTimer = findViewById(R.id.incrementTimer);
-        decrementTimer = findViewById(R.id.decrementTimer);
+        incrementChrono = findViewById(R.id.incrementChrono);
+        decrementChrono = findViewById(R.id.decrementChrono);
+
+        myChrono = findViewById(R.id.myChrono);
+        myChrono.setBase(SystemClock.elapsedRealtime());
+        myChrono.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+            @Override
+            public void onChronometerTick(Chronometer chronometerChanged) {
+                myChrono = chronometerChanged;
+            }
+        });
+        myChrono.start();
 
         settings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,23 +87,58 @@ public class MainActivity extends AppCompatActivity {
         lockPhone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //check if we can lock phone
-                boolean isAdmin = mDevicePolicyManager.isAdminActive(mComponentName);
-                if (isAdmin) {
-                    Toast.makeText(getApplicationContext(), "Phone locked", Toast.LENGTH_SHORT).show();
-                    //do stuff to block phone
-                    //mDevicePolicyManager.lockNow();
-
-                    //create a pop-up that always stay on top
-                    checkOverlayPermissions();
-
-                } else {
-                    Toast.makeText(getApplicationContext(), "Go to settings to enable admin", Toast.LENGTH_SHORT).show();
-                }
-
+                onLockPhone();
             }
         });
 
+        incrementChrono.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onIncrementChrono();
+            }
+        });
+
+        decrementChrono.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onDecrementChrono();
+            }
+        });
+
+    }
+
+    private void onDecrementChrono() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            long elapsedMillis = SystemClock.elapsedRealtime() - myChrono.getBase();
+            myChrono.setBase(SystemClock.elapsedRealtime() + elapsedMillis);
+            myChrono.setCountDown(true);
+        }
+    }
+
+    private void onIncrementChrono() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            long elapsedMillis = SystemClock.elapsedRealtime() - myChrono.getBase();
+            myChrono.setBase(SystemClock.elapsedRealtime() + elapsedMillis);
+            myChrono.setCountDown(false);
+        }
+    }
+
+    private void resetChrono() {
+
+    }
+
+    private void onLockPhone() {
+        //check if we can lock phone
+        boolean isAdmin = mDevicePolicyManager.isAdminActive(mComponentName);
+        if (isAdmin) {
+            //create a pop-up that always stay on top
+            checkOverlayPermissions();
+            //do stuff to block phone
+            mDevicePolicyManager.lockNow();
+
+        } else {
+            Toast.makeText(getApplicationContext(), "Go to settings to enable admin", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void checkOverlayPermissions() {
