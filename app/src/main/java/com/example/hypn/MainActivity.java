@@ -2,6 +2,7 @@ package com.example.hypn;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -15,15 +16,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
+import android.hardware.display.DisplayManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -47,11 +51,13 @@ public class MainActivity extends AppCompatActivity {
 
     private Button incrementChrono, decrementChrono;
     private Chronometer myChrono;
-
+    private boolean isChronoRunning = false;
+    private long pauseOffset = 0;
 
     private DevicePolicyManager mDevicePolicyManager;
     private ComponentName mComponentName;
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,14 +74,20 @@ public class MainActivity extends AppCompatActivity {
         decrementChrono = findViewById(R.id.decrementChrono);
 
         myChrono = findViewById(R.id.myChrono);
-        myChrono.setBase(SystemClock.elapsedRealtime());
         myChrono.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             @Override
             public void onChronometerTick(Chronometer chronometerChanged) {
-                myChrono = chronometerChanged;
+                if (myChrono.isCountDown()) {
+                    //si le temps passé et supérieur à la base qu'on avait défini
+                    /*if (SystemClock.elapsedRealtime() >= myChrono.getBase()) {
+                        myChrono.setBase(SystemClock.elapsedRealtime());
+                        myChrono.setCountDown(false);
+                        Toast.makeText(getApplicationContext(), "Bloquer le téléphone", Toast.LENGTH_SHORT).show();
+                    }*/
+                }
             }
         });
-        myChrono.start();
+        chronoStart();
 
         settings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,24 +119,52 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public boolean isScreenOn() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            DisplayManager dm = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
+            for (Display display : dm.getDisplays()) {
+                if (display.getState() == Display.STATE_ON) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            //noinspection deprecation
+            return pm.isScreenOn();
+        }
+    }
+
+    private void chronoStart() {
+        if (!isChronoRunning) {
+            //on initialise le chrono au temps qu'on veut
+            //mChronometer.setBase(SystemClock.elapsedRealtime() - (nr_of_min * 60000 + nr_of_sec * 1000)))
+            //SystemClock.elapsedRealtime() = time since the system was booted
+            myChrono.setBase(SystemClock.elapsedRealtime() - 90*60000);
+            myChrono.start();
+            onDecrementChrono();
+            isChronoRunning = true;
+        }
+    }
+
     private void onDecrementChrono() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            long elapsedMillis = SystemClock.elapsedRealtime() - myChrono.getBase();
-            myChrono.setBase(SystemClock.elapsedRealtime() + elapsedMillis);
-            myChrono.setCountDown(true);
+            if (!myChrono.isCountDown()) {
+                long elapsedMillis = SystemClock.elapsedRealtime() - myChrono.getBase();
+                myChrono.setBase(SystemClock.elapsedRealtime() + elapsedMillis);
+                myChrono.setCountDown(true);
+            }
         }
     }
 
     private void onIncrementChrono() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            long elapsedMillis = SystemClock.elapsedRealtime() - myChrono.getBase();
-            myChrono.setBase(SystemClock.elapsedRealtime() + elapsedMillis);
-            myChrono.setCountDown(false);
+            if (myChrono.isCountDown()) {
+                long elapsedMillis = SystemClock.elapsedRealtime() - myChrono.getBase();
+                myChrono.setBase(SystemClock.elapsedRealtime() + elapsedMillis);
+                myChrono.setCountDown(false);
+            }
         }
-    }
-
-    private void resetChrono() {
-
     }
 
     private void onLockPhone() {
