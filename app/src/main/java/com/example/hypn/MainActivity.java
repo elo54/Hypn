@@ -298,9 +298,21 @@ public class MainActivity extends AppCompatActivity {
                 PixelFormat.TRANSLUCENT);
         mLayoutParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL;
 
-
         ViewGroup mView = (ViewGroup) getLayoutInflater().inflate(R.layout.overlay, null);
         mWindowManager.addView(mView, mLayoutParams);
+
+        Chronometer chronometer = mView.findViewById(R.id.chronometer);
+        chronometer.setBase(SystemClock.elapsedRealtime());
+        chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+            @Override
+            public void onChronometerTick(Chronometer chronometer) {
+                if ((SystemClock.elapsedRealtime() - chronometer.getBase()) >= 10000) {
+                    chronometer.setBase(SystemClock.elapsedRealtime());
+                    Toast.makeText(MainActivity.this, "Charged!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        startChronometer(chronometer);
 
         Button unlockPhone = mView.findViewById(R.id.unlockPhone);
         unlockPhone.setOnClickListener(new View.OnClickListener() {
@@ -309,6 +321,7 @@ public class MainActivity extends AppCompatActivity {
                 mWindowManager.removeView(mView);
                 resetTimer();
                 startTimer();
+                chronometer.stop();
             }
         });
 
@@ -322,6 +335,15 @@ public class MainActivity extends AppCompatActivity {
                 mWindowManager.removeView(mView);
             }
         }, 10000);*/
+    }
+
+    private void startChronometer(Chronometer chronometer) {
+        if (!isChronoRunning) {
+            chronometer.setBase(SystemClock.elapsedRealtime());
+            chronometer.start();
+            isChronoRunning = true;
+        }
+
     }
 
     @Override
