@@ -2,7 +2,6 @@ package com.example.hypn;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -19,18 +18,15 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
-import android.hardware.display.DisplayManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.PowerManager;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -52,16 +48,24 @@ public class MainActivity extends AppCompatActivity {
     private ImageView settings;
 
     private Button lockPhone;
+    private boolean isLocked = false;
 
-    private Button incrementChrono, decrementChrono;
-    private Chronometer myChrono;
+    private ScreenReceiver mScreenReceiver;
+
+    private static final long START_TIME_IN_MILLIS = 1 * 60000;
+    private long mEndTime;
+    private long mEndTime2 = 0;
+    private TextView timeLeft;
+    private CountDownTimer mCountDownTimer;
+    private CountDownTimer mCountDownTimer2;
+    private boolean isTimerRunning;
     private boolean isChronoRunning = false;
-    private long pauseOffset = 0;
+    private long mTimeLeftInMillis;
+    private long mTimeLeftInMillis2 = 0;
 
     private DevicePolicyManager mDevicePolicyManager;
     private ComponentName mComponentName;
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,25 +78,14 @@ public class MainActivity extends AppCompatActivity {
 
         //INIT VIEW
         settings = findViewById(R.id.settings);
-        lockPhone = findViewById(R.id.lockPhone);
-        incrementChrono = findViewById(R.id.incrementChrono);
-        decrementChrono = findViewById(R.id.decrementChrono);
+        timeLeft = findViewById(R.id.timeLeft);
 
-        myChrono = findViewById(R.id.myChrono);
-        myChrono.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
-            @Override
-            public void onChronometerTick(Chronometer chronometerChanged) {
-                if (myChrono.isCountDown()) {
-                    //si le temps passé et supérieur à la base qu'on avait défini
-                    /*if (SystemClock.elapsedRealtime() >= myChrono.getBase()) {
-                        myChrono.setBase(SystemClock.elapsedRealtime());
-                        myChrono.setCountDown(false);
-                        Toast.makeText(getApplicationContext(), "Bloquer le téléphone", Toast.LENGTH_SHORT).show();
-                    }*/
-                }
-            }
-        });
-        chronoStart();
+        //INIT RECEIVER
+        // register receiver that handles screen on and screen off logic
+        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        mScreenReceiver = new ScreenReceiver();
+        registerReceiver(mScreenReceiver, filter);
 
         settings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
                 openLoginActivity();
             }
         });
+
+        lockPhone = findViewById(R.id.lockPhone);
 
         lockPhone.setOnClickListener(new View.OnClickListener() {
             @Override
