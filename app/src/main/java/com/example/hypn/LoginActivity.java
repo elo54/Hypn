@@ -7,26 +7,49 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 public class LoginActivity extends AppCompatActivity {
 
-    private Button validate;
+    private Button goToSignIn, goToSignUp;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        validate = findViewById(R.id.validate);
-        validate.setOnClickListener(new View.OnClickListener() {
+        mAuth = FirebaseAuth.getInstance();
+        if (mAuth.getCurrentUser()!=null) {
+            mAuth.signOut();
+        }
+
+        goToSignIn = findViewById(R.id.goToSignIn);
+        goToSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openSettingsActivity();
+                openSignInActivity();
+            }
+        });
+
+        goToSignUp = findViewById(R.id.goToSignUp);
+        goToSignUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openSignUpActivity();
             }
         });
     }
 
-    private void openSettingsActivity() {
-        Intent intent = new Intent(LoginActivity.this, SettingsActivity.class);
+    private void openSignUpActivity() {
+        Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
         startActivity(intent);
     }
+
+    private void openSignInActivity() {
+        Intent intent = new Intent(LoginActivity.this, SignInActivity.class);
+        startActivity(intent);
+    }
+
+
 }

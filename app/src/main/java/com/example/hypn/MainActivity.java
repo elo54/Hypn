@@ -7,6 +7,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
@@ -38,7 +39,22 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.ValueEventListener;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -52,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ScreenReceiver mScreenReceiver;
 
-    private static final long START_TIME_IN_MILLIS = 1 * 60000;
+    private long mStartTimeInMillis = 0;
     private long mEndTime;
     private long mEndTime2 = 0;
     private TextView timeLeft;
@@ -63,8 +79,13 @@ public class MainActivity extends AppCompatActivity {
     private long mTimeLeftInMillis;
     private long mTimeLeftInMillis2 = 0;
 
+    private String startTime, endTime, chargeTime, useTime;
+
     private DevicePolicyManager mDevicePolicyManager;
     private ComponentName mComponentName;
+
+    private FirebaseAuth mAuth;
+    private FirebaseDatabase mDatabase;
 
 
     @Override
@@ -80,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
         //INIT VIEW
         settings = findViewById(R.id.settings);
         timeLeft = findViewById(R.id.timeLeft);
+        lockPhone = findViewById(R.id.lockPhone);
 
         //INIT RECEIVER
         // register receiver that handles screen on and screen off logic
@@ -88,14 +110,43 @@ public class MainActivity extends AppCompatActivity {
         mScreenReceiver = new ScreenReceiver();
         registerReceiver(mScreenReceiver, filter);
 
+        mAuth = FirebaseAuth.getInstance();
+        if (mAuth.getCurrentUser()!=null) {
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            //ACCES BDD
+            mDatabase = FirebaseDatabase.getInstance();
+            DatabaseReference mRef = mDatabase.getReference("Users").child(user.getUid());
+            mRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    //retrieve data from database and fill editText accordingly
+                    GenericTypeIndicator<HashMap<String, String>> genericTypeIndicator = new GenericTypeIndicator<HashMap<String, String>>() {
+                    };
+                    HashMap<String, String> hashmap = dataSnapshot.getValue(genericTypeIndicator);
+                    startTime = hashmap.get("startTime");
+                    endTime = hashmap.get("endTime");
+                    chargeTime = hashmap.get("chargeTime");
+                    useTime = hashmap.get("useTime");
+                    initTimer();
+                    resetTimer();
+                    startTimer();
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        } else {
+            Toast.makeText(getApplicationContext(), "Réglez les paramètres pour commencer", Toast.LENGTH_SHORT).show();
+        }
+
         settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openLoginActivity();
             }
         });
-
-        lockPhone = findViewById(R.id.lockPhone);
 
         lockPhone.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,12 +155,50 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        resetTimer();
-        startTimer();
+    }
 
+    private void initTimer() {
+        //init startTime -- unblock at startTime
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            boolean isAfterStart = LocalTime.now().isAfter(LocalTime.parse(startTime));
+            if (isAfterStart) {
+                unlockPhone();
+            }
+        }
+
+        //init endTime -- block at endTime
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            boolean isAfterEnd = LocalTime.now().isAfter(LocalTime.parse(endTime));
+            if (isAfterEnd) {
+                lockPhone();
+            }
+        }*/
+
+        //init chargeTime -- set timer duration when locked
+
+        //init useTime -- set time for countDownTimer
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+        Date convertedDate = new Date();
+        try {
+            convertedDate = dateFormat.parse(useTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        mStartTimeInMillis = convertedDate.getTime();
+    }
+
+    private void unlockPhone() {
     }
 
     private void lockPhone() {
+        if (mCountDownTimer != null) {
+            pauseTimer();
+        }
+        checkOverlayPermissions();
+        /* ADMIN STUFF
         //check if we can lock phone
         boolean isAdmin = mDevicePolicyManager.isAdminActive(mComponentName);
         if (isAdmin) {
@@ -122,11 +211,11 @@ public class MainActivity extends AppCompatActivity {
 
         } else {
             Toast.makeText(getApplicationContext(), "Go to settings to enable admin", Toast.LENGTH_SHORT).show();
-        }
+        }*/
     }
 
     private void resetTimer() {
-        mTimeLeftInMillis = START_TIME_IN_MILLIS;
+        mTimeLeftInMillis = mStartTimeInMillis;
         updateCountDownText();
     }
 
@@ -178,8 +267,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateCountDownText() {
-        int hours = (int) (mTimeLeftInMillis / 1000) / 3600;
-        int minutes = (int) ((mTimeLeftInMillis / 1000) % 3600) / 60;
+        int hours = (int) (mStartTimeInMillis / (1000*60*60));
+        int minutes = (int) (mTimeLeftInMillis / (1000*60)) % 60;
         int seconds = (int) (mTimeLeftInMillis / 1000) % 60;
 
         String timeLeftFormatted = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
@@ -193,8 +282,10 @@ public class MainActivity extends AppCompatActivity {
         //screen was on
         if(!mScreenReceiver.wasScreenOff()) {
             Log.d("Screen state", "Activity.onStop: Screen is off. Pause timer");
-            pauseTimer();
-            startSecondTimer();
+            if (mCountDownTimer != null) {
+                pauseTimer();
+                startSecondTimer();
+            }
         }
 
         SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
@@ -227,7 +318,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
 
         SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
-        mTimeLeftInMillis = prefs.getLong("millisLeft", START_TIME_IN_MILLIS);
+        mTimeLeftInMillis = prefs.getLong("millisLeft", mStartTimeInMillis);
         isTimerRunning = prefs.getBoolean("timerRunning", false);
 
         updateCountDownText();
@@ -302,10 +393,10 @@ public class MainActivity extends AppCompatActivity {
         chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             @Override
             public void onChronometerTick(Chronometer chronometer) {
-                if ((SystemClock.elapsedRealtime() - chronometer.getBase()) >= 10000) {
+                /*if ((SystemClock.elapsedRealtime() - chronometer.getBase()) >= 10000) {
                     chronometer.setBase(SystemClock.elapsedRealtime());
                     Toast.makeText(MainActivity.this, "Charged!", Toast.LENGTH_SHORT).show();
-                }
+                }*/
             }
         });
         startChronometer(chronometer);
@@ -349,11 +440,11 @@ public class MainActivity extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (Settings.canDrawOverlays(this)) {
                     // permission granted...
-                    Toast.makeText(getApplicationContext(), "Overlaying enabled", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Le blocage est autorisé", Toast.LENGTH_SHORT).show();
                     creatingOverlay();
                 } else {
                     // permission not granted...
-                    Toast.makeText(getApplicationContext(), "Go to settings to enable overlaying", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Allez dans les paramètres pour autoriser le blocage", Toast.LENGTH_SHORT).show();
                 }
             }
         }

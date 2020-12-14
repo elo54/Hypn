@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "872949219701",
+    "project_id": "hypn-4e653",
+    "storage_bucket": "hypn-4e653.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:872949219701:android:f7de4ecb016535287ed33c",
+        "android_client_info": {
+          "package_name": "com.example.hypn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "872949219701-r40uo7c826crvfvg6vktr8m9glkh2lfu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdNmCyzOHr1HIAwsfIF43HDbyEx9FJTdY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "872949219701-r40uo7c826crvfvg6vktr8m9glkh2lfu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

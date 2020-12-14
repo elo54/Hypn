@@ -4,6 +4,7 @@
     package="com.example.hypn">
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"
@@ -12,7 +13,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Hypn">
-        <activity android:name=".SettingsActivity"/>
+        <activity android:name=".SignUpActivity"></activity>
+        <activity android:name=".SignInActivity" />
+        <activity android:name=".SettingsActivity" />
         <activity android:name=".LoginActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -34,8 +37,7 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".UpdateService"/>
-
+        <service android:name=".UpdateService" />
     </application>
 
 </manifest>
