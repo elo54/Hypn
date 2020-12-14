@@ -22,6 +22,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -45,7 +46,9 @@ public class SettingsActivity extends AppCompatActivity {
 
     private static final int REQUEST_OVERLAY_PERMISSION = 1;
 
-    private EditText editStartTime, editEndTime;
+    private ImageView help;
+
+    private EditText editStartTime, editCurfewTime, editEndTime;
     private EditText editChargeTime, editUseTime;
     private Button confirmSettings;
     private TextView goBack;
@@ -58,8 +61,10 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
+        help = findViewById(R.id.help);
         editStartTime = findViewById(R.id.editStartTime);
         editEndTime = findViewById(R.id.editEndTime);
+        editCurfewTime = findViewById(R.id.editCurfewTime);
         editChargeTime = findViewById(R.id.editChargeTime);
         editUseTime = findViewById(R.id.editUseTime);
         confirmSettings = findViewById(R.id.confirmSettings);
@@ -82,6 +87,7 @@ public class SettingsActivity extends AppCompatActivity {
                     };
                     HashMap<String, String> hashmap = dataSnapshot.getValue(genericTypeIndicator);
                     editStartTime.setText(hashmap.get("startTime"));
+                    editCurfewTime.setText(hashmap.get("curfewTime"));
                     editEndTime.setText(hashmap.get("endTime"));
                     editChargeTime.setText(hashmap.get("chargeTime"));
                     editUseTime.setText(hashmap.get("useTime"));
@@ -95,6 +101,13 @@ public class SettingsActivity extends AppCompatActivity {
         } else {
             openLoginActivity();
         }
+        
+        help.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openTutorial();
+            }
+        });
 
         goBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,6 +120,13 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 displayTimePickerClock(editStartTime);
+            }
+        });
+        
+        editCurfewTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                displayTimePickerClock(editCurfewTime);
             }
         });
 
@@ -140,9 +160,15 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
+    private void openTutorial() {
+        Intent intent = new Intent(SettingsActivity.this, PopTutorialActivity.class);
+        startActivity(intent);
+    }
+
     private void saveSettings() {
         //save to database and return to mainActivity
         String startTime = editStartTime.getText().toString().trim();
+        String curfewTime = editCurfewTime.getText().toString().trim();
         String endTime = editEndTime.getText().toString().trim();
         String chargeTime = editChargeTime.getText().toString().trim();
         String useTime = editUseTime.getText().toString().trim();
@@ -151,6 +177,7 @@ public class SettingsActivity extends AppCompatActivity {
         String userID = user.getUid();
         DatabaseReference mRef = FirebaseDatabase.getInstance().getReference().child("Users").child(userID);
         mRef.child("startTime").setValue(startTime);
+        mRef.child("curfewTime").setValue(curfewTime);
         mRef.child("endTime").setValue(endTime);
         mRef.child("chargeTime").setValue(chargeTime);
         mRef.child("useTime").setValue(useTime);

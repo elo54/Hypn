@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     private long mTimeLeftInMillis;
     private long mTimeLeftInMillis2 = 0;
 
-    private String startTime, endTime, chargeTime, useTime;
+    private String startTime, curfewTime, endTime, chargeTime, useTime;
 
     private DevicePolicyManager mDevicePolicyManager;
     private ComponentName mComponentName;
@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
                     };
                     HashMap<String, String> hashmap = dataSnapshot.getValue(genericTypeIndicator);
                     startTime = hashmap.get("startTime");
+                    curfewTime = hashmap.get("curfewTime");
                     endTime = hashmap.get("endTime");
                     chargeTime = hashmap.get("chargeTime");
                     useTime = hashmap.get("useTime");
@@ -158,24 +159,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initTimer() {
-        //init startTime -- unblock at startTime
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            boolean isAfterStart = LocalTime.now().isAfter(LocalTime.parse(startTime));
-            if (isAfterStart) {
-                unlockPhone();
-            }
-        }
-
-        //init endTime -- block at endTime
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            boolean isAfterEnd = LocalTime.now().isAfter(LocalTime.parse(endTime));
-            if (isAfterEnd) {
-                lockPhone();
-            }
-        }*/
-
-        //init chargeTime -- set timer duration when locked
-
         //init useTime -- set time for countDownTimer
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -188,6 +171,39 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mStartTimeInMillis = convertedDate.getTime();
+
+        //init chargeTime -- set timer duration when locked
+
+        /*
+        //init startTime -- make blocking and charging possible
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            boolean isAfterStart = LocalTime.now().isAfter(LocalTime.parse(startTime));
+            if (isAfterStart) {
+                if (!isTimerRunning) {
+                    startTimer();
+                }
+            }
+        }
+
+        //init curfewTime -- make blocking possible and charging impossible
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            boolean isAfterCurfew = LocalTime.now().isAfter(LocalTime.parse(curfewTime));
+            if (isAfterCurfew) {
+                // do something here
+                startTimer();
+            }
+        }
+
+        //init endTime -- stop blocking
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            boolean isAfterEnd = LocalTime.now().isAfter(LocalTime.parse(endTime));
+            if (isAfterEnd) {
+                if (isTimerRunning) {
+                    pauseTimer();
+                }
+            }
+        }
+        */
     }
 
     private void unlockPhone() {

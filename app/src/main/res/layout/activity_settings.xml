@@ -7,15 +7,30 @@
     android:background="@color/black"
     tools:context=".SettingsActivity">
 
-    <LinearLayout
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
             android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/help"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="end"
+                android:src="@drawable/ic_baseline_help_outline_24"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:contentDescription="@string/settings" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="20dp"
+                android:layout_margin="10dp"
                 android:orientation="vertical"
                 android:gravity="center"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -38,6 +53,23 @@
                     android:gravity="center"
                     android:focusableInTouchMode="false"
                     android:hint="Heure de début"
+                    android:textColor="@color/grey"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Heure de couvre-feu"
+                    android:textColor="@color/white"
+                    android:textSize="18sp"
+                    android:layout_margin="20dp" />
+
+                <EditText
+                    android:id="@+id/editCurfewTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:focusableInTouchMode="false"
+                    android:hint="Heure de couvre-feu"
                     android:textColor="@color/grey"/>
 
                 <TextView
@@ -100,20 +132,27 @@
 
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/goBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:text="Retour"
+                android:textColor="@color/white"
+                android:textSize="15sp"
+                android:layout_margin="10dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="30dp"/>
+
+        </LinearLayout>
+
+    </ScrollView>
 
 
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/goBack"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Retour"
-        android:textColor="@color/white"
-        android:textSize="15sp"
-        android:layout_margin="30dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

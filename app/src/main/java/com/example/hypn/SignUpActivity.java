@@ -91,8 +91,9 @@ public class SignUpActivity extends AppCompatActivity {
     private void createSettings(FirebaseUser user) {
         String userID = user.getUid();
         DatabaseReference mRef = FirebaseDatabase.getInstance().getReference().child("Users").child(userID);
-        mRef.child("startTime").setValue("08:00");
-        mRef.child("endTime").setValue("20:00");
+        mRef.child("startTime").setValue("19:00");
+        mRef.child("curfewTime").setValue("20:00");
+        mRef.child("endTime").setValue("8:00");
         mRef.child("chargeTime").setValue("01:00");
         mRef.child("useTime").setValue("00:30");
     }
